@@ -1,0 +1,1681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TURBAN HOPPER - 1984 New Delhi Arcade</title>
+    <!-- Retro 1980s Arcade Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0b0a10;
+            --cabinet-trim: #ff9900;
+            --cabinet-accent: #e6005c;
+            --neon-cyan: #00f0ff;
+            --neon-yellow: #ffe600;
+            --neon-green: #39ff14;
+            --text-light: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 50% 20%, #241438 0%, #0b0a10 75%);
+            color: var(--text-light);
+            font-family: 'Press Start 2P', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Arcade Cabinet Wrapper */
+        .arcade-cabinet {
+            width: 100%;
+            max-width: 580px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Marquee Header */
+        .marquee {
+            width: 100%;
+            background: linear-gradient(90deg, #ff512f 0%, #dd2476 50%, #ff9900 100%);
+            border: 4px solid #ffe600;
+            border-radius: 12px 12px 4px 4px;
+            padding: 8px 12px;
+            text-align: center;
+            box-shadow: 0 0 18px rgba(255, 153, 0, 0.6), inset 0 0 10px rgba(0, 0, 0, 0.5);
+            margin-bottom: 8px;
+            position: relative;
+        }
+
+        .marquee h1 {
+            margin: 0;
+            font-size: clamp(14px, 3.8vw, 22px);
+            color: #fff;
+            text-shadow: 3px 3px 0px #1a0526, -1px -1px 0px #ff0055;
+            letter-spacing: 1px;
+        }
+
+        .marquee .subtitle {
+            font-size: clamp(8px, 2vw, 10px);
+            color: #ffe600;
+            margin-top: 4px;
+            text-shadow: 1px 1px 0px #000;
+        }
+
+        /* Top HUD Bar */
+        .hud-bar {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #12101c;
+            border: 3px solid #3c365c;
+            border-radius: 8px;
+            padding: 8px 10px;
+            margin-bottom: 8px;
+            font-size: clamp(9px, 2.2vw, 12px);
+        }
+
+        .hud-box {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .hud-label {
+            color: #ff4d6d;
+            font-size: 0.8em;
+        }
+
+        .hud-value {
+            color: #00f0ff;
+        }
+
+        .hud-controls {
+            display: flex;
+            gap: 6px;
+        }
+
+        .toggle-btn {
+            background: #231f38;
+            color: #ffe600;
+            border: 2px solid #ffe600;
+            border-radius: 6px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 8px;
+            padding: 6px 8px;
+            cursor: pointer;
+            transition: transform 0.1s, background 0.15s;
+        }
+
+        .toggle-btn:hover {
+            background: #373059;
+        }
+
+        .toggle-btn:active {
+            transform: scale(0.95);
+        }
+
+        .toggle-btn.off {
+            color: #888;
+            border-color: #555;
+        }
+
+        /* CRT Screen Bezel */
+        .crt-bezel {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 13 / 15;
+            max-height: 68vh;
+            background: #000;
+            border: 6px solid #2b2640;
+            border-radius: 14px;
+            box-shadow: 
+                0 0 0 3px #ff9900,
+                0 12px 30px rgba(0, 0, 0, 0.85),
+                inset 0 0 25px rgba(0, 0, 0, 0.9);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+
+        /* Authentic 1980s CRT Scanline & Curvature Overlay */
+        .crt-overlay {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: 
+                linear-gradient(
+                    rgba(18, 16, 16, 0) 50%, 
+                    rgba(0, 0, 0, 0.32) 50%
+                ),
+                linear-gradient(
+                    90deg,
+                    rgba(255, 0, 0, 0.04),
+                    rgba(0, 255, 0, 0.02),
+                    rgba(0, 0, 255, 0.04)
+                );
+            background-size: 100% 4px, 6px 100%;
+            box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.65);
+            z-index: 5;
+            transition: opacity 0.2s ease;
+        }
+
+        .crt-overlay.hidden {
+            opacity: 0;
+        }
+
+        /* Overlay Screens (Start, Game Over, Stage Clear) */
+        .screen-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(10, 8, 18, 0.86);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 16px;
+            z-index: 10;
+        }
+
+        .screen-overlay.hidden {
+            display: none;
+        }
+
+        .overlay-title {
+            font-size: clamp(16px, 4.5vw, 26px);
+            color: #ffe600;
+            text-shadow: 3px 3px 0 #d90429;
+            margin-bottom: 14px;
+            line-height: 1.4;
+        }
+
+        .legend-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px 14px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 2px solid #4a4270;
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-bottom: 16px;
+            font-size: clamp(7px, 1.9vw, 9px);
+            text-align: left;
+            color: #e0fbfc;
+            width: 92%;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .arcade-start-btn {
+            background: linear-gradient(180deg, #39ff14 0%, #159900 100%);
+            color: #051a00;
+            border: 3px solid #ffffff;
+            border-radius: 10px;
+            padding: 14px 22px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: clamp(11px, 3vw, 15px);
+            cursor: pointer;
+            box-shadow: 0 5px 0 #0b5200, 0 0 18px rgba(57, 255, 20, 0.6);
+            animation: pulseBtn 1.2s infinite alternate;
+        }
+
+        .arcade-start-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 #0b5200;
+        }
+
+        @keyframes pulseBtn {
+            from { transform: scale(1); }
+            to { transform: scale(1.04); }
+        }
+
+        /* Bottom Status & Arcade Touch D-Pad */
+        .bottom-deck {
+            width: 100%;
+            margin-top: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-strip {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #12101c;
+            border: 2px solid #3c365c;
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-size: 9px;
+        }
+
+        .lives-container {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .timer-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            width: 55%;
+        }
+
+        .timer-bar-bg {
+            flex: 1;
+            height: 12px;
+            background: #222;
+            border: 2px solid #fff;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .timer-bar-fill {
+            height: 100%;
+            width: 100%;
+            background: #39ff14;
+            transition: width 0.1s linear, background-color 0.2s;
+        }
+
+        /* Touch D-Pad Controls */
+        .dpad-container {
+            display: grid;
+            grid-template-columns: repeat(3, 62px);
+            grid-template-rows: repeat(2, 54px);
+            gap: 8px;
+            margin-top: 4px;
+            justify-content: center;
+        }
+
+        .dpad-btn {
+            background: linear-gradient(180deg, #ff9900 0%, #cc5200 100%);
+            border: 3px solid #ffe600;
+            border-radius: 12px;
+            color: #fff;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 0 #7a2900, 0 6px 12px rgba(0, 0, 0, 0.6);
+            cursor: pointer;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        .dpad-btn:active, .dpad-btn.pressed {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 #7a2900;
+            background: #ffb84d;
+        }
+
+        .btn-up { grid-column: 2; grid-row: 1; }
+        .btn-left { grid-column: 1; grid-row: 2; }
+        .btn-down { grid-column: 2; grid-row: 2; }
+        .btn-right { grid-column: 3; grid-row: 2; }
+
+        .hint-text {
+            font-size: 8px;
+            color: #9d94c4;
+            text-align: center;
+            margin-top: 2px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="arcade-cabinet">
+    <!-- Arcade Marquee -->
+    <div class="marquee">
+        <h1>TURBAN HOPPER</h1>
+        <div class="subtitle">NEW DELHI RUSH • 1984 ARCADE EDITION</div>
+    </div>
+
+    <!-- Top Score & Settings HUD -->
+    <div class="hud-bar">
+        <div class="hud-box">
+            <span class="hud-label">1UP SCORE</span>
+            <span class="hud-value" id="scoreDisplay">00000</span>
+        </div>
+        <div class="hud-box" style="text-align: center;">
+            <span class="hud-label">HIGH SCORE</span>
+            <span class="hud-value" id="highScoreDisplay" style="color: #ffe600;">01000</span>
+        </div>
+        <div class="hud-box" style="text-align: center;">
+            <span class="hud-label">STAGE</span>
+            <span class="hud-value" id="levelDisplay" style="color: #39ff14;">01</span>
+        </div>
+        <div class="hud-controls">
+            <button class="toggle-btn" id="crtToggle" title="Toggle CRT Scanlines">CRT:ON</button>
+            <button class="toggle-btn" id="soundToggle" title="Toggle 8-Bit Audio">SFX:ON</button>
+        </div>
+    </div>
+
+    <!-- Main CRT Display -->
+    <div class="crt-bezel" id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+        <div class="crt-overlay" id="crtOverlay"></div>
+
+        <!-- Start / Title Screen Overlay -->
+        <div class="screen-overlay" id="startScreen">
+            <div class="overlay-title">NAMASTE!<br>CROSS OLD DELHI</div>
+            <div class="legend-grid">
+                <div class="legend-item">👳 <span>PAGRI = PLAYER</span></div>
+                <div class="legend-item">🏛️ <span>5 ARCHES = GOAL</span></div>
+                <div class="legend-item">🛺 <span>TUK-TUKS = DODGE</span></div>
+                <div class="legend-item">🚛 <span>TRUCKS = DODGE</span></div>
+                <div class="legend-item">🐄 <span>SACRED COW = DODGE</span></div>
+                <div class="legend-item">🪷 <span>YAMUNA = RIDE BOATS</span></div>
+            </div>
+            <button class="arcade-start-btn" id="startBtn">INSERT COIN / START</button>
+            <p style="font-size: 8px; color: #00f0ff; margin-top: 14px;">ARROWS / WASD OR D-PAD TO HOP</p>
+        </div>
+
+        <!-- Game Over Overlay -->
+        <div class="screen-overlay hidden" id="gameOverScreen">
+            <div class="overlay-title" style="color: #ff2a55;">GAME OVER</div>
+            <p id="finalScoreText" style="font-size: 12px; color: #ffe600; margin-bottom: 10px;">FINAL SCORE: 00000</p>
+            <p id="newHighText" class="hidden" style="font-size: 10px; color: #39ff14; margin-bottom: 16px;">★ NEW DELHI RECORD! ★</p>
+            <button class="arcade-start-btn" id="restartBtn">PLAY AGAIN</button>
+        </div>
+    </div>
+
+    <!-- Bottom Lives, Timer & Touch Controls -->
+    <div class="bottom-deck">
+        <div class="status-strip">
+            <div class="lives-container" id="livesDisplay">
+                <!-- Turban icons drawn via JS -->
+            </div>
+            <div class="timer-wrapper">
+                <span style="color: #ffe600;">TIME</span>
+                <div class="timer-bar-bg">
+                    <div class="timer-bar-fill" id="timerFill"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tactile Arcade D-Pad -->
+        <div class="dpad-container">
+            <button class="dpad-btn btn-up" data-dir="UP" aria-label="Hop Up">▲</button>
+            <button class="dpad-btn btn-left" data-dir="LEFT" aria-label="Hop Left">◀</button>
+            <button class="dpad-btn btn-down" data-dir="DOWN" aria-label="Hop Down">▼</button>
+            <button class="dpad-btn btn-right" data-dir="RIGHT" aria-label="Hop Right">▶</button>
+        </div>
+        <div class="hint-text">SWIPE SCREEN, USE D-PAD, OR ARROW KEYS / WASD</div>
+    </div>
+</div>
+
+<script>
+/**
+ * ============================================================================
+ * TURBAN HOPPER - 1980s NEW DELHI ARCADE FROGGER
+ * Complete self-contained retro arcade engine with procedural pixel art sprites,
+ * Web Audio API 8-bit chiptune sound synthesizer, and responsive grid physics.
+ * ============================================================================
+ */
+
+// --- 1. WEB AUDIO API 8-BIT SOUND SYNTHESIZER ---
+class RetroAudio {
+    constructor() {
+        this.ctx = null;
+        this.enabled = true;
+    }
+
+    init() {
+        if (!this.ctx) {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') {
+            this.ctx.resume();
+        }
+    }
+
+    playTone(freq, type, duration, slideTo = null, vol = 0.15, delay = 0) {
+        if (!this.enabled) return;
+        try {
+            this.init();
+            const now = this.ctx.currentTime + delay;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, now);
+            if (slideTo) {
+                osc.frequency.exponentialRampToValueAtTime(slideTo, now + duration);
+            }
+
+            gain.gain.setValueAtTime(vol, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+
+            osc.start(now);
+            osc.stop(now + duration);
+        } catch (e) {
+            // Audio context blocked or unavailable
+        }
+    }
+
+    hop() {
+        // Classic 8-bit upward chirp
+        this.playTone(260, 'square', 0.09, 580, 0.12);
+    }
+
+    tukTukHorn() {
+        // Double "Beep-Beep!" characteristic of Delhi auto-rickshaws
+        this.playTone(520, 'sawtooth', 0.07, 500, 0.06, 0);
+        this.playTone(620, 'sawtooth', 0.08, 600, 0.06, 0.09);
+    }
+
+    goalReached() {
+        // Festive Indian raga-inspired 8-bit arpeggio
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        notes.forEach((n, idx) => {
+            this.playTone(n, 'square', 0.12, null, 0.14, idx * 0.08);
+        });
+    }
+
+    stageClear() {
+        const melody = [523.25, 587.33, 659.25, 783.99, 659.25, 1046.50];
+        melody.forEach((n, idx) => {
+            this.playTone(n, 'triangle', 0.16, null, 0.18, idx * 0.11);
+        });
+    }
+
+    squash() {
+        // Retro descending noise/buzz
+        this.playTone(220, 'sawtooth', 0.35, 45, 0.2, 0);
+        this.playTone(150, 'square', 0.35, 35, 0.18, 0.05);
+    }
+
+    splash() {
+        // Yamuna river splash effect
+        this.playTone(300, 'triangle', 0.25, 70, 0.18, 0);
+        this.playTone(180, 'sine', 0.3, 50, 0.18, 0.08);
+    }
+
+    gameOver() {
+        const notes = [392.00, 369.99, 349.23, 329.63, 261.63];
+        notes.forEach((n, idx) => {
+            this.playTone(n, 'sawtooth', 0.22, null, 0.16, idx * 0.18);
+        });
+    }
+}
+
+const sfx = new RetroAudio();
+
+// --- 2. GAME GRID & CONSTANTS ---
+// 13 columns x 15 rows classic arcade layout
+const COLS = 13;
+const ROWS = 15;
+const TILE = 32; // Logical pixel size per grid cell (416 x 480 internal resolution)
+const CANVAS_W = COLS * TILE;
+const CANVAS_H = ROWS * TILE;
+
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+canvas.width = CANVAS_W;
+canvas.height = CANVAS_H;
+
+// Row Definitions (0 = Top, 14 = Bottom)
+// Row 0: Top Red Fort / Delhi Banner
+// Row 1: 5 India Gate Goal Arches
+// Rows 2-6: Yamuna River (Boats, Rafts, Lotus Pads)
+// Row 7: Safe Median (Chandni Chowk Bazaar Sidewalk with Chai Stall & Marigolds)
+// Rows 8-12: Bustling New Delhi Road (Tuk-Tuks, Cycle Rickshaws, Painted Trucks, Sacred Cows)
+// Row 13: Starting Safe Pavement (Connaught Place Curb)
+// Row 14: Bottom Status & Decorative Border
+
+const GOAL_COLS = [1, 3, 6, 9, 11]; // 5 Archway slots across the 13-col top row
+
+// --- 3. GAME STATE ---
+let gameState = 'START'; // 'START', 'PLAYING', 'DYING', 'STAGE_CLEAR', 'GAMEOVER'
+let score = 0;
+let highScore = parseInt(localStorage.getItem('turbanHopperHighScore') || '1000', 10);
+let level = 1;
+let lives = 3;
+let maxTime = 35; // seconds per crossing
+let timeLeft = maxTime;
+let highestRowReached = 13;
+let goalsFilled = [false, false, false, false, false];
+let animFrameId = null;
+let lastTimestamp = 0;
+let globalTick = 0;
+let floatingTexts = [];
+let particles = [];
+let deathTimer = 0;
+let deathType = 'ROAD'; // 'ROAD' or 'RIVER'
+let deathPos = { x: 0, y: 0 };
+
+// Player (Traditional Rajasthani/Delhi Pagri Turban)
+const player = {
+    col: 6,
+    row: 13,
+    x: 6 * TILE,
+    y: 13 * TILE,
+    targetX: 6 * TILE,
+    targetY: 13 * TILE,
+    hopProgress: 0,
+    isHopping: false,
+    dir: 'UP', // 'UP', 'DOWN', 'LEFT', 'RIGHT'
+    turbanColor: '#ff5500', // Saffron-orange festive turban
+    turbanAccent: '#ffe600',
+    kalgiColor: '#00f0ff'
+};
+
+// Dynamic Lane Entities
+let lanes = [];
+
+// --- 4. PIXEL ART PROCEDURAL RENDERERS ---
+
+/**
+ * Draws the player's ornate Indian Turban (Pagri) with kalgi feather and hop bounce
+ */
+function drawTurban(ctx, x, y, size, dir = 'UP', hopScale = 1, colorMain = '#ff6600', colorGold = '#ffe600') {
+    ctx.save();
+    const cx = x + size / 2;
+    const cy = y + size / 2;
+    ctx.translate(cx, cy);
+    ctx.scale(hopScale, hopScale);
+
+    // Shadow underneath
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+    ctx.beginPath();
+    ctx.ellipse(0, size * 0.34, size * 0.36, size * 0.14, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Flowing tail (Shamla) trailing behind based on direction
+    ctx.fillStyle = colorMain;
+    let tailX = 0, tailY = 8;
+    if (dir === 'UP') { tailX = 5; tailY = 10; }
+    if (dir === 'DOWN') { tailX = -5; tailY = -10; }
+    if (dir === 'LEFT') { tailX = 10; tailY = 4; }
+    if (dir === 'RIGHT') { tailX = -10; tailY = 4; }
+
+    ctx.fillRect(tailX - 3, tailY - 3, 6, 8);
+    ctx.fillStyle = colorGold;
+    ctx.fillRect(tailX - 3, tailY + 3, 6, 2);
+
+    // Main Turban Base (V-shaped Rajasthani/Delhi Pagri folds)
+    ctx.fillStyle = '#d93800'; // Darker shade for depth
+    ctx.beginPath();
+    ctx.arc(0, 1, size * 0.36, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Left & Right Crisscross Cloth Folds
+    ctx.fillStyle = colorMain;
+    ctx.beginPath();
+    ctx.ellipse(-4, 0, size * 0.25, size * 0.32, -0.35, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#ff8533';
+    ctx.beginPath();
+    ctx.ellipse(4, 0, size * 0.25, size * 0.32, 0.35, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Golden Zari Ribbon Strips
+    ctx.strokeStyle = colorGold;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(-8, -6);
+    ctx.lineTo(7, 6);
+    ctx.moveTo(8, -6);
+    ctx.lineTo(-7, 6);
+    ctx.stroke();
+
+    // Royal Jewel Brooch (Sarpech) & Plume (Kalgi)
+    ctx.fillStyle = '#ff0055';
+    ctx.fillRect(-3, -9, 6, 5);
+    ctx.fillStyle = '#00f0ff';
+    ctx.fillRect(-2, -14, 4, 5);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(-1, -12, 2, 2);
+
+    ctx.restore();
+}
+
+/**
+ * Draws a classic Green & Yellow New Delhi Auto-Rickshaw (Tuk-Tuk)
+ */
+function drawTukTuk(ctx, x, y, w, h, dir) {
+    ctx.save();
+    if (dir < 0) {
+        ctx.translate(x + w, y);
+        ctx.scale(-1, 1);
+    } else {
+        ctx.translate(x, y);
+    }
+
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.4)';
+    ctx.fillRect(4, h - 5, w - 8, 4);
+
+    // Rear & Front Tires
+    ctx.fillStyle = '#111';
+    ctx.fillRect(6, h - 7, 7, 6);
+    ctx.fillRect(w - 13, h - 7, 7, 6);
+    ctx.fillStyle = '#888';
+    ctx.fillRect(8, h - 5, 3, 2);
+    ctx.fillRect(w - 11, h - 5, 3, 2);
+
+    // Lower Green Body
+    ctx.fillStyle = '#009e3d';
+    ctx.fillRect(4, h * 0.45, w - 10, h * 0.36);
+
+    // Iconic Delhi Yellow Canopy Roof
+    ctx.fillStyle = '#ffd500';
+    ctx.beginPath();
+    ctx.moveTo(5, h * 0.45);
+    ctx.lineTo(8, 5);
+    ctx.lineTo(w - 12, 5);
+    ctx.lineTo(w - 6, h * 0.45);
+    ctx.closePath();
+    ctx.fill();
+
+    // Canopy Trim & Front Windshield Frame
+    ctx.fillStyle = '#111';
+    ctx.fillRect(w - 12, 8, 4, h * 0.37); // Open passenger cabin
+    ctx.fillRect(9, 8, 9, h * 0.37);      // Rear window
+
+    // Front Nose & Headlight
+    ctx.fillStyle = '#009e3d';
+    ctx.fillRect(w - 8, h * 0.48, 6, h * 0.3);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(w - 3, h * 0.52, 3, 4); // Headlight beam glow
+    ctx.fillStyle = 'rgba(255, 255, 180, 0.35)';
+    ctx.beginPath();
+    ctx.moveTo(w, h * 0.52);
+    ctx.lineTo(w + 14, h * 0.35);
+    ctx.lineTo(w + 14, h * 0.75);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.restore();
+}
+
+/**
+ * Draws a brightly decorated Indian Tata Truck ("HORN OK PLEASE")
+ */
+function drawIndianTruck(ctx, x, y, w, h, dir, primaryColor) {
+    ctx.save();
+    if (dir < 0) {
+        ctx.translate(x + w, y);
+        ctx.scale(-1, 1);
+    } else {
+        ctx.translate(x, y);
+    }
+
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.45)';
+    ctx.fillRect(4, h - 5, w - 8, 4);
+
+    // 3 Axles of Wheels
+    ctx.fillStyle = '#111';
+    [10, 24, w - 14].forEach(wx => {
+        ctx.fillRect(wx, h - 7, 8, 6);
+        ctx.fillStyle = '#ff9900';
+        ctx.fillRect(wx + 2, h - 5, 4, 2);
+        ctx.fillStyle = '#111';
+    });
+
+    // Cargo Box (Ornate folk-art patterns)
+    ctx.fillStyle = primaryColor;
+    ctx.fillRect(4, 4, w - 26, h - 10);
+
+    // Decorative Borders & "OK" Motif on Cargo
+    ctx.strokeStyle = '#ffe600';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(6, 6, w - 30, h - 14);
+
+    // Colorful Stripes
+    ctx.fillStyle = '#00f0ff';
+    ctx.fillRect(8, 9, w - 34, 3);
+    ctx.fillStyle = '#39ff14';
+    ctx.fillRect(8, h - 13, w - 34, 3);
+
+    // Mini "HORN OK" badge
+    ctx.fillStyle = '#ffe600';
+    ctx.fillRect(12, 14, 16, 6);
+    ctx.fillStyle = '#d90429';
+    ctx.fillRect(14, 15, 5, 4);
+    ctx.fillRect(21, 15, 5, 4);
+
+    // Truck Cabin (Front)
+    ctx.fillStyle = '#ff9900';
+    ctx.fillRect(w - 21, 7, 17, h - 13);
+    // Crown / Taj above cabin
+    ctx.fillStyle = '#ff0055';
+    ctx.fillRect(w - 20, 3, 14, 4);
+
+    // Windshield
+    ctx.fillStyle = '#a8f9ff';
+    ctx.fillRect(w - 11, 10, 6, 8);
+
+    // Bumper & Headlights
+    ctx.fillStyle = '#e0e0e0';
+    ctx.fillRect(w - 6, h - 10, 5, 4);
+    ctx.fillStyle = '#fff700';
+    ctx.fillRect(w - 4, h - 14, 3, 3);
+
+    ctx.restore();
+}
+
+/**
+ * Draws a Pedal Cycle Rickshaw
+ */
+function drawCycleRickshaw(ctx, x, y, w, h, dir) {
+    ctx.save();
+    if (dir < 0) {
+        ctx.translate(x + w, y);
+        ctx.scale(-1, 1);
+    } else {
+        ctx.translate(x, y);
+    }
+
+    // Wheels
+    ctx.strokeStyle = '#d0d0d0';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(10, h - 7, 5, 0, Math.PI * 2);
+    ctx.arc(w - 8, h - 7, 5, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Passenger Hood (Vibrant Magenta/Blue)
+    ctx.fillStyle = '#e60073';
+    ctx.beginPath();
+    ctx.moveTo(4, h - 9);
+    ctx.lineTo(4, 6);
+    ctx.lineTo(18, 6);
+    ctx.lineTo(20, h - 9);
+    ctx.closePath();
+    ctx.fill();
+
+    // Hood Trim
+    ctx.fillStyle = '#ffe600';
+    ctx.fillRect(4, 6, 14, 3);
+
+    // Cyclist Frame & Rider
+    ctx.strokeStyle = '#00f0ff';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(18, h - 9);
+    ctx.lineTo(w - 8, h - 7);
+    ctx.lineTo(w - 12, 11);
+    ctx.stroke();
+
+    // Rider Silhouette & Cap
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(w - 16, 10, 5, 8);
+    ctx.fillStyle = '#ff6600';
+    ctx.fillRect(w - 16, 6, 5, 4);
+
+    ctx.restore();
+}
+
+/**
+ * Draws a Sacred White Cow strolling calmly across the Delhi street
+ */
+function drawSacredCow(ctx, x, y, w, h, dir, tick) {
+    ctx.save();
+    if (dir < 0) {
+        ctx.translate(x + w, y);
+        ctx.scale(-1, 1);
+    } else {
+        ctx.translate(x, y);
+    }
+
+    const walkOffset = Math.sin(tick * 0.15) * 2;
+
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.35)';
+    ctx.fillRect(6, h - 4, w - 12, 3);
+
+    // 4 Legs (animated walk)
+    ctx.fillStyle = '#e8e4d9';
+    ctx.fillRect(9 + walkOffset, h - 10, 3, 8);
+    ctx.fillRect(15 - walkOffset, h - 10, 3, 8);
+    ctx.fillRect(w - 16 + walkOffset, h - 10, 3, 8);
+    ctx.fillRect(w - 11 - walkOffset, h - 10, 3, 8);
+
+    // Swishing Tail
+    ctx.strokeStyle = '#d4cfc1';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(6, 12);
+    ctx.lineTo(3, 18 + walkOffset);
+    ctx.stroke();
+
+    // Body + Sacred Zebu Hump
+    ctx.fillStyle = '#fffdf7';
+    ctx.fillRect(6, 10, w - 14, 12);
+    ctx.beginPath();
+    ctx.arc(w - 13, 10, 5, Math.PI, 0); // Hump
+    ctx.fill();
+
+    // Festive Marigold Garland around neck
+    ctx.fillStyle = '#ff6600';
+    ctx.fillRect(w - 11, 10, 3, 11);
+    ctx.fillStyle = '#ffe600';
+    ctx.fillRect(w - 11, 13, 3, 3);
+
+    // Head & Curved Horns
+    ctx.fillStyle = '#fffdf7';
+    ctx.fillRect(w - 9, 8, 7, 8);
+    ctx.fillStyle = '#ffb703';
+    ctx.fillRect(w - 8, 4, 2, 4); // Horn
+    ctx.fillRect(w - 5, 4, 2, 4);
+
+    // Tilak mark & eye
+    ctx.fillStyle = '#d90429';
+    ctx.fillRect(w - 4, 9, 2, 2);
+    ctx.fillStyle = '#111';
+    ctx.fillRect(w - 6, 10, 2, 2);
+
+    ctx.restore();
+}
+
+/**
+ * Draws Yamuna River Floating Platforms (Wooden Boats, Bamboo Rafts, Pink Lotus Pads)
+ */
+function drawRiverPlatform(ctx, item, tick) {
+    const { x, y, w, h, type, dir } = item;
+    ctx.save();
+
+    if (type === 'LOTUS') {
+        // Giant Blooming Yamuna Lotus Pad clusters
+        const count = Math.floor(w / TILE);
+        for (let i = 0; i < count; i++) {
+            const lx = x + i * TILE + TILE / 2;
+            const ly = y + h / 2 + Math.sin(tick * 0.08 + i) * 1.2;
+
+            // Green Lily Pad
+            ctx.fillStyle = '#1b9e3e';
+            ctx.beginPath();
+            ctx.arc(lx, ly, 13, 0.2, Math.PI * 1.85);
+            ctx.lineTo(lx, ly);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.strokeStyle = '#6bff8e';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            // Pink Lotus Flower Blossom
+            ctx.fillStyle = '#ff4da6';
+            ctx.beginPath();
+            ctx.arc(lx, ly - 2, 6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#ffe600';
+            ctx.fillRect(lx - 2, ly - 4, 4, 4);
+        }
+    } else if (type === 'BOAT') {
+        // Traditional Wooden Yamuna Ferry Boat
+        ctx.fillStyle = 'rgba(0, 20, 50, 0.45)';
+        ctx.fillRect(x + 4, y + h - 4, w - 8, 4);
+
+        // Hull
+        ctx.fillStyle = '#8c4a27';
+        ctx.beginPath();
+        ctx.moveTo(x + 2, y + h / 2);
+        ctx.lineTo(x + 12, y + 4);
+        ctx.lineTo(x + w - 12, y + 4);
+        ctx.lineTo(x + w - 2, y + h / 2);
+        ctx.lineTo(x + w - 12, y + h - 4);
+        ctx.lineTo(x + 12, y + h - 4);
+        ctx.closePath();
+        ctx.fill();
+
+        // Painted Deck Planks & Colorful Canopy Trim
+        ctx.fillStyle = '#c4723b';
+        ctx.fillRect(x + 14, y + 7, w - 28, h - 14);
+
+        ctx.fillStyle = '#ffe600';
+        ctx.fillRect(x + 16, y + 8, w - 32, 3);
+        ctx.fillStyle = '#ff0055';
+        ctx.fillRect(x + 16, y + h - 11, w - 32, 3);
+    } else if (type === 'RAFT') {
+        // Bamboo River Raft
+        ctx.fillStyle = '#b59410';
+        ctx.fillRect(x + 3, y + 5, w - 6, h - 10);
+
+        // Individual Bamboo Poles
+        ctx.fillStyle = '#e3c530';
+        for (let py = y + 7; py < y + h - 7; py += 5) {
+            ctx.fillRect(x + 4, py, w - 8, 3);
+        }
+        // Rope Bindings
+        ctx.fillStyle = '#5c3a11';
+        ctx.fillRect(x + 12, y + 4, 4, h - 8);
+        ctx.fillRect(x + w - 16, y + 4, 4, h - 8);
+    }
+
+    ctx.restore();
+}
+
+// --- 5. LEVEL & TRAFFIC INITIALIZATION ---
+
+function initLevel(lvl) {
+    lanes = [];
+    const speedMult = 1 + (lvl - 1) * 0.16;
+
+    // YAMUNA RIVER LANES (Rows 2 to 6)
+    // Row 2: Fast Wooden Boats (Right)
+    lanes.push(createLane(2, 1, 1.35 * speedMult, [
+        { offset: 0, w: TILE * 3, type: 'BOAT' },
+        { offset: TILE * 5.5, w: TILE * 3, type: 'BOAT' },
+        { offset: TILE * 10.5, w: TILE * 3, type: 'BOAT' }
+    ]));
+
+    // Row 3: Lotus Pads (Left)
+    lanes.push(createLane(3, -1, 1.05 * speedMult, [
+        { offset: TILE * 1, w: TILE * 2, type: 'LOTUS' },
+        { offset: TILE * 5, w: TILE * 2, type: 'LOTUS' },
+        { offset: TILE * 9, w: TILE * 3, type: 'LOTUS' }
+    ]));
+
+    // Row 4: Long Bamboo Rafts (Right)
+    lanes.push(createLane(4, 1, 0.9 * speedMult, [
+        { offset: TILE * 0.5, w: TILE * 4, type: 'RAFT' },
+        { offset: TILE * 7.5, w: TILE * 4, type: 'RAFT' }
+    ]));
+
+    // Row 5: Lotus Pads (Left)
+    lanes.push(createLane(5, -1, 1.25 * speedMult, [
+        { offset: 0, w: TILE * 3, type: 'LOTUS' },
+        { offset: TILE * 5, w: TILE * 2, type: 'LOTUS' },
+        { offset: TILE * 9.5, w: TILE * 3, type: 'LOTUS' }
+    ]));
+
+    // Row 6: Medium Wooden Boats (Right)
+    lanes.push(createLane(6, 1, 1.0 * speedMult, [
+        { offset: TILE * 1, w: TILE * 3, type: 'BOAT' },
+        { offset: TILE * 6.5, w: TILE * 3, type: 'BOAT' },
+        { offset: TILE * 11.5, w: TILE * 2, type: 'BOAT' }
+    ]));
+
+    // NEW DELHI TRAFFIC LANES (Rows 8 to 12)
+    // Row 8: Painted Indian Trucks ("Horn OK Please") - Left
+    lanes.push(createLane(8, -1, 1.15 * speedMult, [
+        { offset: TILE * 1, w: TILE * 2.3, type: 'TRUCK', color: '#d90429' },
+        { offset: TILE * 7.5, w: TILE * 2.3, type: 'TRUCK', color: '#3a0ca3' }
+    ]));
+
+    // Row 9: Fast Green & Yellow Auto-Rickshaws (Tuk-Tuks) - Right
+    lanes.push(createLane(9, 1, 1.65 * speedMult, [
+        { offset: TILE * 0.5, w: TILE * 1.25, type: 'TUKTUK' },
+        { offset: TILE * 5.0, w: TILE * 1.25, type: 'TUKTUK' },
+        { offset: TILE * 9.5, w: TILE * 1.25, type: 'TUKTUK' }
+    ]));
+
+    // Row 10: Sacred Cows Strolling Calmly - Left
+    lanes.push(createLane(10, -1, 0.72 * speedMult, [
+        { offset: TILE * 2, w: TILE * 1.35, type: 'COW' },
+        { offset: TILE * 6.5, w: TILE * 1.35, type: 'COW' },
+        { offset: TILE * 11, w: TILE * 1.35, type: 'COW' }
+    ]));
+
+    // Row 11: Bustling Auto-Rickshaws (Tuk-Tuks) - Right
+    lanes.push(createLane(11, 1, 1.3 * speedMult, [
+        { offset: TILE * 1.5, w: TILE * 1.25, type: 'TUKTUK' },
+        { offset: TILE * 6.0, w: TILE * 1.25, type: 'TUKTUK' },
+        { offset: TILE * 10.5, w: TILE * 1.25, type: 'TUKTUK' }
+    ]));
+
+    // Row 12: Cycle Rickshaws - Left
+    lanes.push(createLane(12, -1, 1.0 * speedMult, [
+        { offset: TILE * 0.5, w: TILE * 1.2, type: 'CYCLE' },
+        { offset: TILE * 4.5, w: TILE * 1.2, type: 'CYCLE' },
+        { offset: TILE * 8.5, w: TILE * 1.2, type: 'CYCLE' },
+        { offset: TILE * 12.0, w: TILE * 1.2, type: 'CYCLE' }
+    ]));
+}
+
+function createLane(row, dir, speed, templates) {
+    const wrapWidth = CANVAS_W + TILE * 4;
+    const entities = templates.map(t => ({
+        x: t.offset,
+        y: row * TILE,
+        w: t.w,
+        h: TILE,
+        row,
+        dir,
+        speed,
+        type: t.type,
+        color: t.color || '#ff5500'
+    }));
+    return { row, dir, speed, wrapWidth, entities };
+}
+
+function resetPlayerPosition() {
+    player.col = 6;
+    player.row = 13;
+    player.x = player.col * TILE;
+    player.y = player.row * TILE;
+    player.targetX = player.x;
+    player.targetY = player.y;
+    player.isHopping = false;
+    player.hopProgress = 0;
+    player.dir = 'UP';
+    highestRowReached = 13;
+    timeLeft = maxTime;
+}
+
+// --- 6. PLAYER MOVEMENT & CONTROLS ---
+
+function movePlayer(dir) {
+    if (gameState !== 'PLAYING' || player.isHopping) return;
+
+    let nextCol = Math.round(player.x / TILE);
+    let nextRow = player.row;
+
+    if (dir === 'UP') nextRow -= 1;
+    if (dir === 'DOWN') nextRow += 1;
+    if (dir === 'LEFT') nextCol -= 1;
+    if (dir === 'RIGHT') nextCol += 1;
+
+    player.dir = dir;
+
+    // Boundary checks
+    if (nextRow < 1 || nextRow > 13) return;
+    if (nextCol < 0 || nextCol >= COLS) return;
+
+    // Check Top Goal Row (Row 1 - India Gate Arches)
+    if (nextRow === 1) {
+        const goalIdx = GOAL_COLS.indexOf(nextCol);
+        if (goalIdx !== -1 && !goalsFilled[goalIdx]) {
+            // Reached an open India Gate Arch!
+            sfx.goalReached();
+            goalsFilled[goalIdx] = true;
+            const timeBonus = Math.ceil(timeLeft) * 10;
+            addScore(200 + timeBonus, nextCol * TILE + TILE / 2, TILE * 1.5);
+            spawnParticles(nextCol * TILE + TILE / 2, TILE * 1.5, '#ffe600', 18);
+
+            // Check if all 5 arches are filled!
+            if (goalsFilled.every(Boolean)) {
+                sfx.stageClear();
+                addScore(1000, CANVAS_W / 2, CANVAS_H / 2);
+                level++;
+                updateHUD();
+                goalsFilled = [false, false, false, false, false];
+                initLevel(level);
+            }
+            resetPlayerPosition();
+            return;
+        } else {
+            // Hit sandstone pillar wall or already filled arch
+            triggerDeath('ROAD');
+            return;
+        }
+    }
+
+    // Start smooth 8-bit grid hop
+    sfx.hop();
+    player.isHopping = true;
+    player.hopProgress = 0;
+    player.row = nextRow;
+    player.targetX = nextCol * TILE;
+    player.targetY = nextRow * TILE;
+
+    // Award forward progress points
+    if (nextRow < highestRowReached) {
+        highestRowReached = nextRow;
+        addScore(10);
+    }
+}
+
+// Keyboard Controls (Arrow Keys + WASD)
+window.addEventListener('keydown', (e) => {
+    const key = e.key;
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(key)) {
+        e.preventDefault();
+    }
+
+    if (gameState === 'START' && (key === 'Enter' || key === ' ')) {
+        startGame();
+        return;
+    }
+
+    if (key === 'ArrowUp' || key === 'w' || key === 'W') movePlayer('UP');
+    if (key === 'ArrowDown' || key === 's' || key === 'S') movePlayer('DOWN');
+    if (key === 'ArrowLeft' || key === 'a' || key === 'A') movePlayer('LEFT');
+    if (key === 'ArrowRight' || key === 'd' || key === 'D') movePlayer('RIGHT');
+});
+
+// Touch / Click D-Pad Controls
+document.querySelectorAll('.dpad-btn').forEach(btn => {
+    const dir = btn.getAttribute('data-dir');
+    const handlePress = (e) => {
+        e.preventDefault();
+        btn.classList.add('pressed');
+        movePlayer(dir);
+    };
+    const handleRelease = () => btn.classList.remove('pressed');
+
+    btn.addEventListener('touchstart', handlePress, { passive: false });
+    btn.addEventListener('touchend', handleRelease);
+    btn.addEventListener('mousedown', handlePress);
+    btn.addEventListener('mouseup', handleRelease);
+    btn.addEventListener('mouseleave', handleRelease);
+});
+
+// Swipe Gesture Support on Game Canvas
+let touchStartX = 0;
+let touchStartY = 0;
+canvas.addEventListener('touchstart', (e) => {
+    if (e.touches.length > 0) {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+    }
+}, { passive: true });
+
+canvas.addEventListener('touchend', (e) => {
+    if (e.changedTouches.length > 0) {
+        const dx = e.changedTouches[0].clientX - touchStartX;
+        const dy = e.changedTouches[0].clientY - touchStartY;
+        if (Math.abs(dx) > 22 || Math.abs(dy) > 22) {
+            if (Math.abs(dx) > Math.abs(dy)) {
+                movePlayer(dx > 0 ? 'RIGHT' : 'LEFT');
+            } else {
+                movePlayer(dy > 0 ? 'DOWN' : 'UP');
+            }
+        }
+    }
+}, { passive: true });
+
+// --- 7. SCORING, PARTICLES & DEATH HANDLING ---
+
+function addScore(pts, fxX = null, fxY = null) {
+    score += pts;
+    if (score > highScore) {
+        highScore = score;
+        localStorage.setItem('turbanHopperHighScore', highScore.toString());
+    }
+    if (fxX !== null && fxY !== null) {
+        floatingTexts.push({
+            text: `+${pts}`,
+            x: fxX,
+            y: fxY,
+            life: 1.0
+        });
+    }
+    updateHUD();
+}
+
+function spawnParticles(x, y, color, count = 14) {
+    for (let i = 0; i < count; i++) {
+        const angle = (Math.PI * 2 * i) / count + Math.random() * 0.4;
+        const speed = 1 + Math.random() * 3;
+        particles.push({
+            x,
+            y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            color,
+            life: 1.0
+        });
+    }
+}
+
+function triggerDeath(type) {
+    if (gameState !== 'PLAYING') return;
+    gameState = 'DYING';
+    deathType = type;
+    deathTimer = 0.85;
+    deathPos = { x: player.x + TILE / 2, y: player.y + TILE / 2 };
+
+    if (type === 'RIVER') {
+        sfx.splash();
+        spawnParticles(deathPos.x, deathPos.y, '#00f0ff', 18);
+    } else {
+        sfx.squash();
+        spawnParticles(deathPos.x, deathPos.y, '#ff5500', 18);
+    }
+}
+
+// --- 8. MAIN UPDATE LOOP ---
+
+function update(dt) {
+    globalTick++;
+
+    // Update Floating Score Texts
+    floatingTexts.forEach(ft => {
+        ft.y -= 28 * dt;
+        ft.life -= 1.1 * dt;
+    });
+    floatingTexts = floatingTexts.filter(ft => ft.life > 0);
+
+    // Update Pixel Particles
+    particles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life -= 1.6 * dt;
+    });
+    particles = particles.filter(p => p.life > 0);
+
+    // Move all Traffic & Yamuna River Platforms
+    lanes.forEach(lane => {
+        lane.entities.forEach(ent => {
+            ent.x += lane.dir * lane.speed * 60 * dt;
+            if (lane.dir > 0 && ent.x > CANVAS_W + TILE) {
+                ent.x = -ent.w - TILE;
+            } else if (lane.dir < 0 && ent.x + ent.w < -TILE) {
+                ent.x = CANVAS_W + TILE;
+            }
+        });
+    });
+
+    // Random ambient tuk-tuk horn honk during active play
+    if (gameState === 'PLAYING' && Math.random() < 0.0025) {
+        sfx.tukTukHorn();
+    }
+
+    if (gameState === 'DYING') {
+        deathTimer -= dt;
+        if (deathTimer <= 0) {
+            lives--;
+            updateHUD();
+            if (lives <= 0) {
+                endGame();
+            } else {
+                resetPlayerPosition();
+                gameState = 'PLAYING';
+            }
+        }
+        return;
+    }
+
+    if (gameState !== 'PLAYING') return;
+
+    // Countdown Timer
+    timeLeft -= dt;
+    const timerPct = Math.max(0, (timeLeft / maxTime) * 100);
+    const timerFill = document.getElementById('timerFill');
+    timerFill.style.width = `${timerPct}%`;
+    if (timerPct < 25) {
+        timerFill.style.backgroundColor = '#ff2a55';
+    } else if (timerPct < 50) {
+        timerFill.style.backgroundColor = '#ffe600';
+    } else {
+        timerFill.style.backgroundColor = '#39ff14';
+    }
+
+    if (timeLeft <= 0) {
+        triggerDeath('ROAD');
+        return;
+    }
+
+    // Smooth Hop Interpolation
+    if (player.isHopping) {
+        player.hopProgress += dt * 11; // Fast crisp arcade hop
+        if (player.hopProgress >= 1) {
+            player.hopProgress = 1;
+            player.isHopping = false;
+            player.x = player.targetX;
+            player.y = player.targetY;
+        } else {
+            player.x += (player.targetX - player.x) * 0.45;
+            player.y += (player.targetY - player.y) * 0.45;
+        }
+    }
+
+    // Collision & Platform Riding Detection (once hop settles or mid-lane)
+    const pCenterX = player.x + TILE / 2;
+    const pLeft = player.x + 6;
+    const pRight = player.x + TILE - 6;
+
+    // 1. Yamuna River Rows (Rows 2 to 6)
+    if (player.row >= 2 && player.row <= 6 && !player.isHopping) {
+        const riverLane = lanes.find(l => l.row === player.row);
+        let ridingPlatform = null;
+
+        if (riverLane) {
+            for (const plat of riverLane.entities) {
+                if (pCenterX >= plat.x + 2 && pCenterX <= plat.x + plat.w - 2) {
+                    ridingPlatform = plat;
+                    break;
+                }
+            }
+        }
+
+        if (ridingPlatform) {
+            // Carry turban along with the boat/raft/lotus
+            const drift = riverLane.dir * riverLane.speed * 60 * dt;
+            player.x += drift;
+            player.targetX = player.x;
+
+            // Carried off-screen edges into river rapids
+            if (player.x < -TILE * 0.4 || player.x + TILE > CANVAS_W + TILE * 0.4) {
+                triggerDeath('RIVER');
+            }
+        } else {
+            // Fell into the Yamuna River!
+            triggerDeath('RIVER');
+        }
+    }
+
+    // 2. New Delhi Road Rows (Rows 8 to 12)
+    if (player.row >= 8 && player.row <= 12) {
+        const roadLane = lanes.find(l => l.row === player.row);
+        if (roadLane) {
+            for (const veh of roadLane.entities) {
+                const vLeft = veh.x + 4;
+                const vRight = veh.x + veh.w - 4;
+                if (pRight > vLeft && pLeft < vRight) {
+                    triggerDeath('ROAD');
+                    return;
+                }
+            }
+        }
+    }
+}
+
+// --- 9. SCENE & BACKGROUND RENDERING ---
+
+function drawBackground() {
+    // Row 0: Red Fort (Lal Qila) Sandstone Top Battlements
+    ctx.fillStyle = '#9e2a2b';
+    ctx.fillRect(0, 0, CANVAS_W, TILE);
+    ctx.fillStyle = '#e09f3e';
+    for (let x = 0; x < CANVAS_W; x += 16) {
+        ctx.fillRect(x + 2, 2, 12, 8);
+    }
+    // Decorative Arcade Header Text inside Canvas Top
+    ctx.fillStyle = '#ffe600';
+    ctx.font = '8px "Press Start 2P", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('★ INDIA GATE • YAMUNA RIVER ★', CANVAS_W / 2, 24);
+
+    // Row 1: India Gate Sandstone Wall & 5 Goal Arches
+    ctx.fillStyle = '#d48c46';
+    ctx.fillRect(0, TILE, CANVAS_W, TILE);
+
+    // Sandstone Brick Texture
+    ctx.fillStyle = '#b56e2b';
+    for (let c = 0; c < COLS; c++) {
+        ctx.fillRect(c * TILE + 2, TILE + 2, TILE - 4, TILE - 4);
+    }
+
+    // Draw 5 Open Goal Arches
+    GOAL_COLS.forEach((col, idx) => {
+        const ax = col * TILE;
+        const ay = TILE;
+
+        // Archway Recess
+        ctx.fillStyle = '#1d1426';
+        ctx.beginPath();
+        ctx.arc(ax + TILE / 2, ay + 14, 12, Math.PI, 0);
+        ctx.lineTo(ax + TILE - 4, ay + TILE);
+        ctx.lineTo(ax + 4, ay + TILE);
+        ctx.closePath();
+        ctx.fill();
+
+        // Gold Arch Trim
+        ctx.strokeStyle = '#ffe600';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // If goal reached, display celebratory Turban inside arch
+        if (goalsFilled[idx]) {
+            drawTurban(ctx, ax, ay + 2, TILE, 'DOWN', 0.9, '#39ff14', '#ffe600');
+        }
+    });
+
+    // Rows 2-6: Yamuna River Water with Animated 8-Bit Ripples
+    ctx.fillStyle = '#0b4f8a';
+    ctx.fillRect(0, TILE * 2, CANVAS_W, TILE * 5);
+
+    ctx.fillStyle = '#1976b5';
+    for (let r = 2; r <= 6; r++) {
+        const waveShift = ((globalTick * 0.6 + r * 17) % 32);
+        for (let x = -32; x < CANVAS_W + 32; x += 32) {
+            ctx.fillRect(x + waveShift, r * TILE + 12, 14, 2);
+            ctx.fillRect(x + waveShift + 10, r * TILE + 24, 10, 2);
+        }
+    }
+
+    // Row 7: Safe Median - Chandni Chowk Bazaar Sidewalk
+    drawSidewalkRow(7, '#4a3b59', '#ff9900');
+
+    // Rows 8-12: New Delhi Asphalt Highway with Dashed Lane Dividers
+    ctx.fillStyle = '#1f2029';
+    ctx.fillRect(0, TILE * 8, CANVAS_W, TILE * 5);
+
+    // Road Curb Lines
+    ctx.fillStyle = '#ffe600';
+    ctx.fillRect(0, TILE * 8, CANVAS_W, 2);
+    ctx.fillRect(0, TILE * 13 - 2, CANVAS_W, 2);
+
+    // Dashed Lane Markings
+    ctx.fillStyle = '#d8dee9';
+    for (let r = 9; r <= 12; r++) {
+        for (let x = 8; x < CANVAS_W; x += 28) {
+            ctx.fillRect(x, r * TILE - 1, 14, 2);
+        }
+    }
+
+    // Row 13: Starting Safe Zone - Connaught Place Pavement
+    drawSidewalkRow(13, '#3d3452', '#00f0ff');
+
+    // Row 14: Bottom Festive Marigold Border
+    ctx.fillStyle = '#140f24';
+    ctx.fillRect(0, TILE * 14, CANVAS_W, TILE);
+    for (let x = 8; x < CANVAS_W; x += 16) {
+        ctx.fillStyle = (x % 32 === 0) ? '#ff6600' : '#ffe600';
+        ctx.beginPath();
+        ctx.arc(x, TILE * 14 + 16, 5, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
+function drawSidewalkRow(row, baseColor, accentColor) {
+    const y = row * TILE;
+    ctx.fillStyle = baseColor;
+    ctx.fillRect(0, y, CANVAS_W, TILE);
+
+    // Decorative Indian Rangoli / Tile Pattern
+    ctx.strokeStyle = accentColor;
+    ctx.lineWidth = 1.5;
+    for (let c = 0; c < COLS; c++) {
+        const cx = c * TILE + TILE / 2;
+        const cy = y + TILE / 2;
+        ctx.strokeRect(c * TILE + 3, y + 3, TILE - 6, TILE - 6);
+        ctx.fillStyle = (c % 2 === 0) ? '#ff0055' : '#ffe600';
+        ctx.fillRect(cx - 2, cy - 2, 4, 4);
+    }
+}
+
+function render() {
+    ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
+
+    // 1. Background Layers
+    drawBackground();
+
+    // 2. River Platforms (Boats, Rafts, Lotus Pads)
+    lanes.filter(l => l.row <= 6).forEach(lane => {
+        lane.entities.forEach(plat => drawRiverPlatform(ctx, plat, globalTick));
+    });
+
+    // 3. Player Turban (drawn above river platforms, below road vehicles)
+    if (gameState !== 'DYING') {
+        const hopBounce = player.isHopping
+            ? 1 + Math.sin(player.hopProgress * Math.PI) * 0.35
+            : 1;
+        drawTurban(
+            ctx,
+            player.x,
+            player.y,
+            TILE,
+            player.dir,
+            hopBounce,
+            player.turbanColor,
+            player.turbanAccent
+        );
+    } else {
+        // Retro 8-Bit Skull / Splash Marker when hit
+        ctx.fillStyle = deathType === 'RIVER' ? '#00f0ff' : '#ff2a55';
+        ctx.font = '18px "Press Start 2P", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(deathType === 'RIVER' ? '≈' : '✖', deathPos.x, deathPos.y + 6);
+    }
+
+    // 4. New Delhi Road Traffic (Tuk-Tuks, Trucks, Cycle Rickshaws, Sacred Cows)
+    lanes.filter(l => l.row >= 8).forEach(lane => {
+        lane.entities.forEach(veh => {
+            if (veh.type === 'TUKTUK') {
+                drawTukTuk(ctx, veh.x, veh.y, veh.w, veh.h, veh.dir);
+            } else if (veh.type === 'TRUCK') {
+                drawIndianTruck(ctx, veh.x, veh.y, veh.w, veh.h, veh.dir, veh.color);
+            } else if (veh.type === 'CYCLE') {
+                drawCycleRickshaw(ctx, veh.x, veh.y, veh.w, veh.h, veh.dir);
+            } else if (veh.type === 'COW') {
+                drawSacredCow(ctx, veh.x, veh.y, veh.w, veh.h, veh.dir, globalTick);
+            }
+        });
+    });
+
+    // 5. Pixel Particles & Floating Score Popups
+    particles.forEach(p => {
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x - 2, p.y - 2, 4, 4);
+    });
+
+    floatingTexts.forEach(ft => {
+        ctx.fillStyle = '#ffe600';
+        ctx.font = '10px "Press Start 2P", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(ft.text, ft.x, ft.y);
+    });
+}
+
+// --- 10. UI & HUD UPDATES ---
+
+function updateHUD() {
+    document.getElementById('scoreDisplay').textContent = score.toString().padStart(5, '0');
+    document.getElementById('highScoreDisplay').textContent = highScore.toString().padStart(5, '0');
+    document.getElementById('levelDisplay').textContent = level.toString().padStart(2, '0');
+
+    // Render Mini Turban Life Icons
+    const livesEl = document.getElementById('livesDisplay');
+    livesEl.innerHTML = '<span style="color:#ff4d6d;">LIVES:</span>';
+    for (let i = 0; i < lives; i++) {
+        const miniCanvas = document.createElement('canvas');
+        miniCanvas.width = 20;
+        miniCanvas.height = 20;
+        const mCtx = miniCanvas.getContext('2d');
+        drawTurban(mCtx, 0, 0, 20, 'UP', 1);
+        livesEl.appendChild(miniCanvas);
+    }
+}
+
+function startGame() {
+    sfx.init();
+    sfx.hop();
+    score = 0;
+    level = 1;
+    lives = 3;
+    goalsFilled = [false, false, false, false, false];
+    floatingTexts = [];
+    particles = [];
+    initLevel(level);
+    resetPlayerPosition();
+    updateHUD();
+
+    document.getElementById('startScreen').classList.add('hidden');
+    document.getElementById('gameOverScreen').classList.add('hidden');
+    gameState = 'PLAYING';
+}
+
+function endGame() {
+    gameState = 'GAMEOVER';
+    sfx.gameOver();
+    document.getElementById('finalScoreText').textContent = `FINAL SCORE: ${score.toString().padStart(5, '0')}`;
+    const newHighEl = document.getElementById('newHighText');
+    if (score >= highScore && score > 0) {
+        newHighEl.classList.remove('hidden');
+    } else {
+        newHighEl.classList.add('hidden');
+    }
+    document.getElementById('gameOverScreen').classList.remove('hidden');
+}
+
+// Button Listeners
+document.getElementById('startBtn').addEventListener('click', startGame);
+document.getElementById('restartBtn').addEventListener('click', startGame);
+
+// CRT Scanline Toggle
+const crtToggle = document.getElementById('crtToggle');
+const crtOverlay = document.getElementById('crtOverlay');
+let crtOn = true;
+crtToggle.addEventListener('click', () => {
+    crtOn = !crtOn;
+    crtOverlay.classList.toggle('hidden', !crtOn);
+    crtToggle.textContent = crtOn ? 'CRT:ON' : 'CRT:OFF';
+    crtToggle.classList.toggle('off', !crtOn);
+});
+
+// Sound Toggle
+const soundToggle = document.getElementById('soundToggle');
+soundToggle.addEventListener('click', () => {
+    sfx.enabled = !sfx.enabled;
+    soundToggle.textContent = sfx.enabled ? 'SFX:ON' : 'SFX:OFF';
+    soundToggle.classList.toggle('off', !sfx.enabled);
+});
+
+// --- 11. GAME LOOP ENTRY POINT ---
+function gameLoop(timestamp) {
+    if (!lastTimestamp) lastTimestamp = timestamp;
+    const dt = Math.min((timestamp - lastTimestamp) / 1000, 0.1);
+    lastTimestamp = timestamp;
+
+    update(dt);
+    render();
+
+    animFrameId = requestAnimationFrame(gameLoop);
+}
+
+window.onload = function () {
+    initLevel(1);
+    resetPlayerPosition();
+    updateHUD();
+    animFrameId = requestAnimationFrame(gameLoop);
+};
+</script>
+</body>
+</html>
